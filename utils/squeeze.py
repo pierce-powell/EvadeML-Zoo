@@ -1,11 +1,75 @@
 import tensorflow as tf
 import numpy as np
 from scipy import ndimage
+from PIL import Image
+from io import BytesIO
+
 
 from .median import median_filter as median_filter_tf
 from .median import median_random_filter as median_random_filter_tf
 from .median import median_random_pos_size_filter as median_random_pos_size_filter_tf
 from .median import median_random_size_filter as median_random_size_filter_tf
+
+
+# JPEG compression squeezer (lossy compression)
+def jpeg_py(imgs, quality=75):
+    """
+    Apply JPEG compression to a batch of images.
+
+    Args:
+        imgs: numpy array, shape (N, H, W, C), floats in [0,1].
+        quality: JPEG quality (int, 1-95 typically). Higher => better quality / less compression.
+
+    Returns:
+        numpy array same shape as imgs, dtype float32, values in [0,1].
+    """
+    # support both grayscale (C==1) and color (C==3)
+    imgs = np.asarray(imgs).astype(np.float32)
+    if imgs.ndim != 4:
+        raise ValueError("jpeg_py expects imgs with shape (N,H,W,C)")
+
+    is_gray = (imgs.shape[3] == 1)
+    out_imgs = []
+
+    for img in imgs:
+        # convert to uint8
+        arr = np.clip(np.rint(img * 255.0), 0, 255).astype(np.uint8)
+        if is_gray:
+            pil = Image.fromarray(arr.squeeze(axis=2), mode='L')
+        else:
+            # assume channels-last RGB
+            pil = Image.fromarray(arr)
+
+        buf = BytesIO()
+        # Pillow expects quality in [1,95] (95 is max lossless-like).
+        pil.save(buf, format='JPEG', quality=int(quality))
+        buf.seek(0)
+        pil2 = Image.open(buf)
+        arr2 = np.array(pil2).astype(np.float32) / 255.0
+
+        if is_gray:
+            # restore C dimension
+            arr2 = np.expand_dims(arr2, axis=2)
+        out_imgs.append(arr2.astype(np.float32))
+
+    result = np.stack(out_imgs, axis=0)
+    return result
+
+
+def jpeg_tf(imgs, quality=75):
+    """
+    TensorFlow wrapper for jpeg_py — uses tf.py_func (TF1 style used elsewhere in repo).
+    Returns a tf.float32 Tensor with the same shape as imgs.
+    """
+    my_func = lambda x: jpeg_py(x, quality)
+    y = tf.py_func(my_func, [imgs], tf.float32, stateful=False)
+    # set static shape to help downstream TF code (copy shape from input)
+    try:
+        y.set_shape(imgs.get_shape())
+    except Exception:
+        # if imgs has no shape known statically, ignore
+        pass
+    return y
 
 
 def reduce_precision_py(x, npp):
@@ -270,6 +334,7 @@ def get_squeezer_by_name(name, func_type):
                      'bilateral_filter',
                      'magnet_mnist',
                      'magnet_cifar10',
+                     'jpeg',
                     ]
 
     for squeezer_name in squeezer_list:

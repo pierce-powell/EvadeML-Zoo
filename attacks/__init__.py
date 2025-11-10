@@ -12,6 +12,7 @@ from .carlini_wrapper import generate_carlini_l2_examples, generate_carlini_li_e
 from .deepfool_wrapper import generate_deepfool_examples, generate_universal_perturbation_examples
 from .adaptive.adaptive_adversary import generate_adaptive_carlini_l2_examples
 from .pgd.pgd_wrapper import generate_pgdli_examples
+from .boundary_attack import generate_boundary_examples
 
 
 # TODO: replace pickle with .h5 for Python 2/3 compatibility issue.
@@ -60,6 +61,8 @@ def generate_adv_examples(sess, model, x, y, X, Y, attack_name, attack_params, v
         generate_adv_examples_func = generate_adaptive_carlini_l2_examples
     elif attack_name == 'pgdli':
         generate_adv_examples_func = generate_pgdli_examples
+    elif attack_name == 'boundary_attack': 
+        generate_adv_examples_func = generate_boundary_examples
     else:
         raise NotImplementedError("Unsuported attack [%s]." % attack_name)
 
