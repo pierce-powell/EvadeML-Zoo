@@ -153,10 +153,13 @@ def generate_boundary_examples(sess, model, x, y, X, Y, attack_params, verbose, 
     Signature matches other attack modules.
     Returns X_adv (numpy array).
     """
-    accepted_params = ['batch_size', 'init_num_trials', 'max_iterations', 'delta', 'epsilon', 'init_const', 'seed']
+    accepted_params = ['batch_size', 'init_num_trials', 'max_iterations', 'delta', 'epsilon', 'init_const', 'seed', 'targeted']
     for k in attack_params:
         if k not in accepted_params:
             raise NotImplementedError("Unsupported params in Boundary attack: %s" % k)
+
+    if 'targeted' in attack_params:
+        del attack_params['targeted']
 
     batch_size = int(attack_params.get('batch_size', 1))
     init_num_trials = int(attack_params.get('init_num_trials', 500))
