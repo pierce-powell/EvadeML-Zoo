@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tensorflow as tf
 import numpy as np
 from scipy import ndimage
@@ -243,13 +244,13 @@ def non_local_means_bw_tf(imgs, search_window, block_size, photo_render):
 
 def bilateral_filter_py(imgs, d, sigmaSpace, sigmaColor):
     """
-    :param d: Diameter of each pixel neighborhood that is used during filtering. 
+    :param d: Diameter of each pixel neighborhood that is used during filtering.
         If it is non-positive, it is computed from sigmaSpace.
-    :param sigmaSpace: Filter sigma in the coordinate space. 
-        A larger value of the parameter means that farther pixels will influence each other as long as their colors are close enough (see sigmaColor ). 
-        When d>0, it specifies the neighborhood size regardless of sigmaSpace. 
+    :param sigmaSpace: Filter sigma in the coordinate space.
+        A larger value of the parameter means that farther pixels will influence each other as long as their colors are close enough (see sigmaColor ).
+        When d>0, it specifies the neighborhood size regardless of sigmaSpace.
         Otherwise, d is proportional to sigmaSpace.
-    :param sigmaColor: Filter sigma in the color space. 
+    :param sigmaColor: Filter sigma in the color space.
         A larger value of the parameter means that farther colors within the pixel neighborhood (see sigmaSpace) will be mixed together, resulting in larger areas of semi-equal color.
     """
     import cv2

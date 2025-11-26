@@ -30,8 +30,9 @@ def _load_single_image(args):
 
 def data_imagenet(img_folder, img_size, label_style = 'caffe', label_size = 1000, selected_idx = None):
     fnames = os.listdir(img_folder)
-    fnames = sorted(fnames, key = lambda x: int(x.split('.')[1]))
-    
+    fnames = sorted(fnames, key=lambda x: int(x.split('_')[-1].split('.')[0]))
+
+
     if isinstance(selected_idx, list):
         selected_fnames = [fnames[i] for i in selected_idx]
     elif isinstance(selected_idx, int):
@@ -39,7 +40,20 @@ def data_imagenet(img_folder, img_size, label_style = 'caffe', label_size = 1000
     else:
         selected_fnames = fnames
 
-    labels = map(lambda x: int(x.split('.')[0]), selected_fnames)
+    # Load labels from ground truth file (one per image)
+    gt_path = os.path.join(os.path.dirname(__file__), 'imagenet_dataset', 'caffe_clsloc_validation_ground_truth.txt')
+    with open(gt_path, 'r') as f:
+        all_labels = []
+        for line in f:
+           parts = line.strip().split()
+           # Handle either "65" or "ILSVRC2012_val_00000001.JPEG 65"
+           if len(parts) == 1:
+              all_labels.append(int(parts[0]))
+           else:
+              all_labels.append(int(parts[-1]))
+
+    labels = [all_labels[int(x.split('_')[-1].split('.')[0]) - 1] for x in selected_fnames]
+
     img_path_list = map(lambda x: [os.path.join(img_folder, x), img_size], selected_fnames)
     X = map(_load_single_image, img_path_list)
     X = np.concatenate(X, axis=0)
@@ -53,7 +67,7 @@ class ImageNetDataset:
         # self.image_size = 224
         self.num_channels = 3
         self.num_classes = 1000
-        self.img_folder = "/tmp/ILSVRC2012_img_val_labeled_caffe"
+        self.img_folder = "/home/pi047867/EvadeML-Zoo/downloads/ILSVRC2012_img_val_labeled_caffe"
 
         if not os.path.isdir:
             raise Exception("Please prepare the ImageNet dataset first: EvadeML-Zoo/datasets/imagenet_dataset/label_as_filename.py.")
@@ -101,7 +115,3 @@ if __name__ == '__main__':
 
     X, Y = dataset.get_test_dataset()
     model = dataset.load_model_by_name('ResNet50')
-
-
-    
-
