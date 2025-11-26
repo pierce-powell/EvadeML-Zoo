@@ -45,7 +45,13 @@ curl -sL https://github.com/mzweilin/EvadeML-Zoo/releases/download/v0.1/results_
 curl -sL https://github.com/mzweilin/EvadeML-Zoo/releases/download/v0.1/results_ImageNet_100_a2749_mobilenet.tar.gz | tar xzv -C results
 ```
 
-## 5. Evaluate with the MNIST dataset.
+## 5. Download the imagenet dataset. 
+Visit this link: https://image-net.org/challenges/LSVRC/2012/2012-downloads.php make an account and download the validation set. 
+Upload the dataset and unzip it. 
+Then in datasets/imagenet.py, change this path:  self.img_folder = "/home/pi047867/EvadeML-Zoo/downloads/ILSVRC2012_img_val_labeled_caffe"
+to match the path where the images are stored. 
+
+## 6. Evaluate with the MNIST dataset.
 ```bash
 # Evaluate the robust classification accuracy and the detection performance.
 python main.py --dataset_name MNIST --model_name carlini  \
@@ -78,7 +84,7 @@ FeatureSqueezing?squeezers=bit_depth_1,median_filter_2_2&distance_measure=l1&fpr
 ```
 
 
-## 5. Evaluate with the CIFAR-10 dataset.
+## 7. Evaluate with the CIFAR-10 dataset.
 ```bash
 python main.py --dataset_name CIFAR-10 --model_name DenseNet \
 --attacks "fgsm?eps=0.0156;bim?eps=0.008&eps_iter=0.0012;carlinili?targeted=next&confidence=5;carlinili?targeted=ll&confidence=5;deepfool?overshoot=10;carlinil2?targeted=next&batch_size=100&max_iterations=1000&confidence=5;carlinil2?targeted=ll&batch_size=100&max_iterations=1000&confidence=5;carlinil0?targeted=next&confidence=5;carlinil0?targeted=ll&confidence=5;jsma?targeted=next;jsma?targeted=ll;boundary_attack?init_num_trials=500&max_iterations=1000&delta=0.02;" \
@@ -111,7 +117,7 @@ FeatureSqueezing?squeezers=bit_depth_5,median_filter_2_2,non_local_means_color_1
 ```
 
 
-## 6. Evaluate with the ImageNet dataset.
+## 8. Evaluate with the ImageNet dataset.
 ```bash
 python main.py --dataset_name ImageNet --model_name MobileNet --nb_examples 5 \
 --attacks "fgsm?eps=0.0078;bim?eps=0.0040&eps_iter=0.0020;carlinili?batch_size=1&targeted=next&confidence=5;carlinili?batch_size=1&targeted=ll&confidence=5;deepfool?overshoot=35;carlinil2?max_iterations=1000&batch_size=10&targeted=next&confidence=5;carlinil2?max_iterations=1000&batch_size=50&targeted=ll&confidence=5;carlinil0?batch_size=1&targeted=next&confidence=5;carlinil0?batch_size=1&targeted=ll&confidence=5;boundary_attack?init_num_trials=500&max_iterations=1000&delta=0.02;" \
